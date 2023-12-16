@@ -1,0 +1,19 @@
+FROM continuumio/miniconda3:23.10.0-1
+
+RUN apt update
+RUN apt install -y wget unzip libopenblas0-openmp
+
+RUN conda install -y -c defaults nomkl numpy==1.23.5 scipy scikit-learn numexpr pandas r-base
+RUN wget https://download.amd.com/developer/eula/zendnn/zendnn-4-1/tensorflow/TF_v2.12_ZenDNN_v4.1_Python_v3.11.zip
+RUN unzip TF_v2.12_ZenDNN_v4.1_Python_v3.11.zip
+RUN pip install TF_v2.12_ZenDNN_v4.1_Python_v3.11/tensorflow-2.12.1-cp311-cp311-manylinux2014_x86_64.whl
+ENV TF_ENABLE_ZENDNN_OPTS 1
+ENV TF_ENABLE_ONEDNN_OPTS 0
+
+RUN mkdir /root/.R/
+RUN echo "CFLAGS=-march=native" >>/root/.R/Makevars
+RUN echo "CXXFLAGS=-march=native" >>/root/.R/Makevars
+
+COPY . /app
+WORKDIR /app
+RUN Rscript requirements.R
